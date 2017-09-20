@@ -29,26 +29,24 @@ import br.com.ifes.astar.visao.GRID;
 public class Application implements Constantes {
 
 	// Mapa do nosso maze
-	public static int[][] mapa = { 
-			{ INICIO, LIVRE, PAREDE, LIVRE, LIVRE, LIVRE,   LIVRE, PAREDE, LIVRE, OBJETIVO }, 
-			{ LIVRE, LIVRE, PAREDE, LIVRE, PAREDE,  PAREDE, LIVRE, PAREDE, LIVRE, PAREDE },
-			{ LIVRE, LIVRE, PAREDE, LIVRE, PAREDE,  PAREDE, LIVRE, LIVRE, LIVRE, PAREDE },
-			{ LIVRE, LIVRE, PAREDE, LIVRE, PAREDE,  PAREDE, PAREDE, PAREDE, PAREDE, PAREDE },
-			{ LIVRE, LIVRE, PAREDE, LIVRE, PAREDE,  PAREDE, PAREDE, PAREDE, PAREDE, LIVRE },
+	public static int[][] mapa = { { INICIO, LIVRE, PAREDE, LIVRE, LIVRE, LIVRE, LIVRE, PAREDE, LIVRE, OBJETIVO },
+			{ LIVRE, LIVRE, PAREDE, LIVRE, PAREDE, PAREDE, LIVRE, PAREDE, LIVRE, PAREDE },
+			{ LIVRE, LIVRE, PAREDE, LIVRE, PAREDE, PAREDE, LIVRE, LIVRE, LIVRE, PAREDE },
+			{ LIVRE, LIVRE, PAREDE, LIVRE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE },
+			{ LIVRE, LIVRE, PAREDE, LIVRE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE, LIVRE },
 			{ LIVRE, LIVRE, PAREDE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE },
-			{ LIVRE, PAREDE, PAREDE, PAREDE, PAREDE,PAREDE, PAREDE, PAREDE, PAREDE, LIVRE }, 
-			{ LIVRE, PAREDE, LIVRE, LIVRE, LIVRE,  LIVRE, LIVRE, LIVRE, LIVRE, LIVRE}, 
-			{ LIVRE, PAREDE, LIVRE, PAREDE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE }, 
-			{ LIVRE, PAREDE, LIVRE, PAREDE, PAREDE,PAREDE, PAREDE, PAREDE, PAREDE, PAREDE }, 
-			{ LIVRE, PAREDE, LIVRE, LIVRE, LIVRE,  LIVRE, LIVRE, LIVRE, LIVRE, LIVRE }, 
-			{ LIVRE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE, LIVRE }, 
-			{ LIVRE, LIVRE, LIVRE, LIVRE, LIVRE,   LIVRE, LIVRE, LIVRE, LIVRE, LIVRE }, 
-	};
+			{ LIVRE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE, LIVRE },
+			{ LIVRE, PAREDE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE },
+			{ LIVRE, PAREDE, LIVRE, PAREDE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE },
+			{ LIVRE, PAREDE, LIVRE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE },
+			{ LIVRE, PAREDE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE },
+			{ LIVRE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE, PAREDE, LIVRE },
+			{ LIVRE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE, LIVRE }, };
 	// Lista que armazena todos os nos visitados ate o objetivo
 	public static List<Node> visitados = new ArrayList<Node>();
+	public static Node noFim;
 
 	public static void main(String[] args) {
-		GRID grid = new GRID();
 		// Aqui eu chamo a busca heuristica
 		int iteracoes = buscaHeuristica();
 		// Printando a quantidade de iteracoes ate o objetivo
@@ -58,7 +56,26 @@ public class Application implements Constantes {
 		visitados.parallelStream().forEach(v -> System.out.print(v));
 		// Caso voce nao queira ver o GRID, basta comentar a linha abaixo
 		// Essa funcao cria o grid usando Panel em Java
-		 grid = new GRID();
+		// grid = new GRID();
+		System.out.println("");
+
+		// Limpo o mapa
+		for (int i = 0; i < TAM_LINHA; i++) {
+			for (int j = 0; j < TAM_COLUNA; j++) {
+				if ( mapa[i][j] == VISITADO ) {
+						mapa[i][j] = LIVRE;
+				}
+			}
+		}
+		// Percorro o mapa mostrando o caminho OTIMO gerado
+		Node noq = noFim;
+		while (noq != null) {
+			System.out.print("" + noq.toString());
+			if ( mapa[noq.x][noq.y] != INICIO && mapa[noq.x][noq.y] != OBJETIVO)
+				mapa[noq.x][noq.y] = VISITADO;
+			noq = noq.pai;
+		}
+		GRID grid = new GRID();
 	}
 
 	/*
@@ -79,9 +96,9 @@ public class Application implements Constantes {
 		while ((!openlist.isEmpty())) {
 			// Encontramos o no com o menor f e chamamos ele de 'q' (atual)
 			Node atual = openlist.poll();
-			
+
 			// Apenas para deixar o NO inicial com a cor original
-			if (mapa[atual.x][atual.y] != INICIO) 
+			if (mapa[atual.x][atual.y] != INICIO)
 				mapa[atual.x][atual.y] = VISITADO;
 			iteracoes += 1;
 
@@ -92,12 +109,14 @@ public class Application implements Constantes {
 						boolean adicionar = true;
 
 						Node sucessor = new Node(atual, atual.x + i, atual.y + j, FIM_X, FIM_Y);
-						if (mapa[sucessor.x][sucessor.y] == PAREDE || mapa[sucessor.x][sucessor.y] == VISITADO) 
+						if (mapa[sucessor.x][sucessor.y] == PAREDE || mapa[sucessor.x][sucessor.y] == VISITADO)
 							adicionar = false;
-						if (mapa[sucessor.x][sucessor.y] == OBJETIVO) 
+						if (mapa[sucessor.x][sucessor.y] == OBJETIVO) {
+							noFim = sucessor;
 							return iteracoes;
+						}
 						for (Node no : openlist) {
-							if (no.x == sucessor.x && no.y == sucessor.y && no.f < sucessor.f) 
+							if (no.x == sucessor.x && no.y == sucessor.y && no.f < sucessor.f)
 								adicionar = false;
 						}
 
@@ -116,7 +135,6 @@ public class Application implements Constantes {
 			closedlist.add(atual);
 		}
 
-		
 		return iteracoes;
 
 	}
